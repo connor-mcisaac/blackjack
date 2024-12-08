@@ -45,6 +45,7 @@ class HandState(Enum):
     PLAYING = 1
     STANDING = 2
     BUST = 3
+    BLACKJACK = 4
 
 
 class Card():
@@ -67,9 +68,16 @@ class Card():
 
 class Hand():
 
-    def __init__(self):
+    def __init__(self, stake):
+        if stake <= 0:
+            msg = f"stake must be > 0, received {stake}"
+            raise ValueError(msg)
         self.cards = []
         self.state = HandState.PLAYING
+        self.stake = stake
+
+    def __len__(self):
+        return len(self.cards)
 
     @property
     def score(self):
@@ -84,6 +92,12 @@ class Hand():
         for card in self.cards:
             if card.rank == _rank.ACE and score <= 11:
                 return True
+        return False
+
+    @property
+    def is_blackjack(self):
+        if self.score == 21 and len(self.cards) == 2:
+            return True
         return False
 
     @property
@@ -109,6 +123,10 @@ class Hand():
             raise StateError(msg)
 
         self.cards.append(card)
+
+        if self.is_blackjack:
+            self.state = HandState.BLACKJACK
+
         if self.is_bust:
             self.state = HandState.BUST
 
