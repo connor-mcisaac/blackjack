@@ -2,6 +2,10 @@ from enum import Enum
 import random
 
 
+class StateError(Exception):
+    pass
+
+
 class _rank(Enum):
     ACE = "A"
     TWO = "2"
@@ -37,6 +41,12 @@ class _suit(Enum):
         return icons[self.value]
 
 
+class HandState(Enum):
+    PLAYING = 1
+    STANDING = 2
+    BUST = 3
+
+
 class Card():
 
     def __init__(self, rank, suit):
@@ -59,6 +69,7 @@ class Hand():
 
     def __init__(self):
         self.cards = []
+        self.state = HandState.PLAYING
 
     @property
     def score(self):
@@ -76,17 +87,33 @@ class Hand():
         return False
 
     @property
+    def is_bust(self):
+        if self.score > 21:
+            return True
+        return False
+
+    @property
     def soft_score(self):
         score = self.score
         if self.is_soft:
             score += 10
         return score
 
-    def add_card(self, card):
+    def hit(self, card):
         if not isinstance(card, Card):
             msg = f"card must be of type Card, received {type(card)} instead"
             raise TypeError(msg)
+
+        if self.state is not HandState.PLAYING:
+            msg = f"Cannot hit when hand is {self.state.name}"
+            raise StateError(msg)
+
         self.cards.append(card)
+        if self.is_bust:
+            self.state = HandState.BUST
+
+    def stand(self):
+        self.state = HandState.STANDING
 
     def __repr__(self):
         return " | ".join([str(card) for card in self.cards])
