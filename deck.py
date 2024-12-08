@@ -52,3 +52,40 @@ class Card():
 
     def __str__(self):
         return f"{self.rank}{self.suit}"
+
+
+class Hand():
+
+    def __init__(self):
+        self.cards = []
+
+    @property
+    def score(self):
+        score = 0
+        for card in self.cards:
+            score += card.value
+        return score
+
+    @property
+    def is_soft(self):
+        score = self.score
+        for card in self.cards:
+            if card.rank == _rank.ACE and score <= 11:
+                return True
+        return False
+
+    @property
+    def soft_score(self):
+        score = self.score
+        if self.is_soft:
+            score += 10
+        return score
+
+    def add_card(self, card):
+        if not isinstance(card, Card):
+            msg = f"card must be of type Card, received {type(card)} instead"
+            raise TypeError(msg)
+        self.cards.append(card)
+
+    def __repr__(self):
+        return " | ".join([str(card) for card in self.cards])
