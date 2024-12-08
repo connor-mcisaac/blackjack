@@ -1,4 +1,5 @@
 from enum import Enum
+import random
 
 
 class _rank(Enum):
@@ -89,3 +90,39 @@ class Hand():
 
     def __repr__(self):
         return " | ".join([str(card) for card in self.cards])
+
+
+class Deck():
+
+    def __init__(self, shuffle=True):
+        self.cards = []
+        for suit in _suit:
+            for rank in _rank:
+                card = Card(rank.value, suit.value)
+                self.cards.append(card)
+        if shuffle:
+            self.shuffle()
+
+    def shuffle(self):
+        random.shuffle(self.cards)
+
+    def __len__(self):
+        return len(self.cards)
+
+    def draw_card(self):
+        return self.cards.pop()
+
+
+class Shoe(Deck):
+
+    def __init__(self, num_decks):
+        self.cards = []
+        for i in range(num_decks):
+            self.add_deck()
+        self.shuffle()
+
+    def add_deck(self):
+        for suit in _suit:
+            for rank in _rank:
+                card = Card(rank.value, suit.value)
+                self.cards.append(card)
