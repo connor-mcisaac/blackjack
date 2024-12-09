@@ -1,4 +1,5 @@
 from enum import Enum
+from abc import ABC, abstractmethod
 
 from deck import StateError, Hand, HandState, Shoe
 
@@ -10,25 +11,14 @@ class PlayerAction(Enum):
     SPLIT = 4
 
 
-class Player():
+class BasePlayer(ABC):
 
-    def __init__(self, budget, wager=1, num_hands=1):
+    def __init__(self, budget):
         if budget <= 0:
             msg = f"budget must be > 0, received {budget}"
             raise ValueError(msg)
 
-        if wager <= 0:
-            msg = f"wager must be > 0, received {wager}"
-            raise ValueError(msg)
-
-        if num_hands < 1 or not isinstance(num_hands, int):
-            msg = f"num_hands must be an int > 0, received {num_hands}"
-            raise ValueError(msg)
-
         self.budget = budget
-        self.wager = wager
-        self.num_hands = num_hands
-
         self.hands = []
 
     def add_hand(self, hand):
@@ -64,6 +54,31 @@ class Player():
         if self.budget < min and not self.hands:
             return True
         return False
+
+    @abstractmethod
+    def make_wager(self):
+        pass
+
+    @abstractmethod
+    def take_action(self, hand):
+        pass
+
+
+class SimplePlayer(BasePlayer):
+
+    def __init__(self, budget, wager=1, num_hands=1):
+        super().__init__(budget)
+
+        if wager <= 0:
+            msg = f"wager must be > 0, received {wager}"
+            raise ValueError(msg)
+
+        if num_hands < 1 or not isinstance(num_hands, int):
+            msg = f"num_hands must be an int > 0, received {num_hands}"
+            raise ValueError(msg)
+
+        self.wager = wager
+        self.num_hands = num_hands
 
     def make_wager(self):
         wagers = []
