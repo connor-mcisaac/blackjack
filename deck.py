@@ -96,7 +96,7 @@ class Hand():
 
     @property
     def is_blackjack(self):
-        if self.score == 21 and len(self.cards) == 2:
+        if self.soft_score == 21 and len(self.cards) == 2:
             return True
         return False
 
