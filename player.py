@@ -109,7 +109,7 @@ class Dealer():
 
     def play_dealer_hand(self):
         while self.hand.state is HandState.PLAYING:
-            if self.hand.score < 17:
+            if self.hand.soft_score < 17:
                 self.hand.hit(self.shoe.draw_card())
             else:
                 self.hand.stand()
