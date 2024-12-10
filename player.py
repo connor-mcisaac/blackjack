@@ -7,8 +7,10 @@ from deck import StateError, Hand, HandState, Shoe
 class PlayerAction(Enum):
     STAND = 1
     HIT = 2
-    DOUBLE = 3
-    SPLIT = 4
+
+    # To be added later
+    # DOUBLE = 3
+    # SPLIT = 4
 
 
 class BasePlayer(ABC):
@@ -60,7 +62,7 @@ class BasePlayer(ABC):
         pass
 
     @abstractmethod
-    def take_action(self, hand):
+    def take_action(self, hand, dealer_card):
         pass
 
 
@@ -88,11 +90,63 @@ class SimplePlayer(BasePlayer):
                 self.remove_money(self.wager)
         return wagers
 
-    def take_action(self, hand):
+    def take_action(self, hand, dealer_card):
         if hand.score < 17:
             return PlayerAction.HIT
         else:
             return PlayerAction.STAND
+
+
+class UserPlayer(BasePlayer):
+
+    def make_single_wager(self):
+        while True:
+            msg = f"How much would you like to wager? (Budget: £{self.budget})"
+            wager = input(msg)
+            if not wager.isdigit() or int(wager) <= 0:
+                print("Wager must be a positive number.")
+                continue
+            elif int(wager) > self.budget:
+                print("You do not have enough funds to make this wager.")
+                continue
+            return int(wager)
+
+    def make_wager(self):
+        wagers = []
+        while not wagers:
+            response = input("Would you like to play this round? [y/n]")
+            if response not in ("y", "n"):
+                print("Only y or n are acceptable inputs.")
+            elif response == "y":
+                wager = self.make_single_wager()
+                wagers.append(wager)
+
+        if wagers:
+            while True:
+                response = input("Would you like to play another hand? [y/n]")
+                if response not in ("y", "n"):
+                    print("Only y or n are acceptable inputs.")
+                elif response == "y":
+                    wager = self.make_single_wager(self)
+                    wagers.append(wager)
+                elif response == "n":
+                    break
+        return wagers
+
+    def take_action(self, hand, dealer_card):
+        print(f"Dealer's Hand: {dealer_card}")
+        print(f"Player's Hand: {hand}")
+        while True:
+            msg = "What action would you like to take?"
+            for action in PlayerAction:
+                msg += f"\n{action.name} [{action.value}]"
+            choice = input(msg)
+            if (not choice.isdigit()
+                    or int(choice) not in [a.value for a in PlayerAction]):
+                print("You must choose one of the options in [].")
+                continue
+            action = PlayerAction(int(choice))
+            return action
 
 
 class Dealer():
@@ -116,7 +170,7 @@ class Dealer():
 
     def play_hand(self, player, hand):
         while hand.state is HandState.PLAYING:
-            action = player.take_action(hand)
+            action = player.take_action(hand, self.hand.cards[0])
             if action is PlayerAction.HIT:
                 hand.hit(self.shoe.draw_card())
             elif action is PlayerAction.STAND:
